@@ -1,0 +1,141 @@
+{
+    "name": "GitHubtoDatalake",
+    "properties": {
+        "activities": [
+            {
+                "name": "ForAllTables",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "Validation",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@pipeline().parameters.p_array",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "Copy GitHub Data",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "HttpReadSettings",
+                                        "requestMethod": "GET"
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "DelimitedTextSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextWriteSettings",
+                                        "quoteAllText": true,
+                                        "fileExtension": ".txt"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "GitHubSourceDS",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "p_file_name": {
+                                            "value": "@item().p_file_name",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DeltaLakeSinkDS",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "p_file_name": {
+                                            "value": "@item().p_file_name",
+                                            "type": "Expression"
+                                        },
+                                        "p_folder_name": {
+                                            "value": "@item().p_folder_name",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Validation",
+                "type": "Validation",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "ValidationDS",
+                        "type": "DatasetReference"
+                    },
+                    "timeout": "0.12:00:00",
+                    "sleep": 10
+                }
+            }
+        ],
+        "parameters": {
+            "p_array": {
+                "type": "array",
+                "defaultValue": [
+                    {
+                        "p_folder_name": "netflix_cast",
+                        "p_file_name": "netflix_cast.csv"
+                    },
+                    {
+                        "p_folder_name": "netflix_category",
+                        "p_file_name": "netflix_category.csv"
+                    },
+                    {
+                        "p_folder_name": "netflix_countries",
+                        "p_file_name": "netflix_countries.csv"
+                    },
+                    {
+                        "p_folder_name": "netflix_directors",
+                        "p_file_name": "netflix_directors.csv"
+                    }
+                ]
+            }
+        },
+        "annotations": [],
+        "lastPublishTime": "2025-03-21T00:08:52Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

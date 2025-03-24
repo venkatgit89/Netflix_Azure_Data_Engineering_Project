@@ -1,0 +1,64 @@
+{
+  "job_id": 347840396795563,
+  "creator_user_name": "lvr5775@gmail.com",
+  "run_as_user_name": "lvr5775@gmail.com",
+  "run_as_owner": true,
+  "settings": {
+    "name": "New Job Mar 22, 2025, 01:03 PM",
+    "email_notifications": {
+      "no_alert_for_skipped_runs": false
+    },
+    "webhook_notifications": {},
+    "timeout_seconds": 0,
+    "max_concurrent_runs": 1,
+    "tasks": [
+      {
+        "task_key": "LookUpTable",
+        "run_if": "ALL_SUCCESS",
+        "notebook_task": {
+          "notebook_path": "/Workspace/Netflix Project/4_ArrayLookup",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0321-225209-e2zj1eeh",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "SilverTableIteration",
+        "depends_on": [
+          {
+            "task_key": "LookUpTable"
+          }
+        ],
+        "run_if": "ALL_SUCCESS",
+        "for_each_task": {
+          "inputs": "{{tasks.LookUpTable.values.files}}",
+          "task": {
+            "task_key": "SilverTableIteration_iteration",
+            "run_if": "ALL_SUCCESS",
+            "notebook_task": {
+              "notebook_path": "/Workspace/Netflix Project/3_silver_parameter",
+              "base_parameters": {
+                "sourcefolder": "{{input.sourcefolder}}",
+                "targetfolder": "{{input.targetfolder}}"
+              },
+              "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "0321-225209-e2zj1eeh",
+            "timeout_seconds": 0,
+            "email_notifications": {},
+            "webhook_notifications": {}
+          }
+        },
+        "timeout_seconds": 0,
+        "email_notifications": {}
+      }
+    ],
+    "format": "MULTI_TASK",
+    "queue": {
+      "enabled": true
+    }
+  },
+  "created_time": 1742673824445
+}
